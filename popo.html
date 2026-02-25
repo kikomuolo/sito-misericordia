@@ -1,0 +1,1801 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rimborsi Volontari</title>
+  <meta name="color-scheme" content="dark light" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+    button, input, select, textarea { font: inherit; }
+    :root{
+      --bg:#070b14;
+      --panel:rgba(255,255,255,0.055);
+      --panel2:rgba(255,255,255,0.085);
+      --stroke:rgba(255,255,255,0.10);
+      --text:rgba(255,255,255,0.92);
+      --muted:rgba(255,255,255,0.62);
+      --accent:#8b5cf6;
+      --accent2:#22c55e;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+      --shadow:0 18px 60px rgba(0,0,0,0.55);
+      --radius:18px;
+      --radius2:26px;
+      --focus:0 0 0 3px rgba(139,92,246,0.35);
+      --glass: blur(14px) saturate(140%);
+      --ease:cubic-bezier(.2,.8,.2,1);
+    }
+    [data-theme="aurora"]{ --bg:#070b14; --accent:#8b5cf6; --accent2:#22c55e; }
+    [data-theme="emerald"]{ --bg:#05110e; --accent:#22c55e; --accent2:#38bdf8; }
+    [data-theme="graphite"]{ --bg:#070707; --accent:#f97316; --accent2:#60a5fa; }
+    [data-theme="sand"]{ --bg:#0d0906; --accent:#f59e0b; --accent2:#a3e635; }
+    [data-theme="light"]{
+      --bg:#f5f7fb;
+      --text:rgba(15,23,42,0.92);
+      --muted:rgba(15,23,42,0.62);
+      --panel:rgba(15,23,42,0.06);
+      --panel2:rgba(15,23,42,0.08);
+      --stroke:rgba(15,23,42,0.12);
+      --shadow:0 18px 60px rgba(15,23,42,0.18);
+      --accent:#2563eb;
+      --accent2:#16a34a;
+    }
+
+    .app { height: 100%; display: grid; grid-template-columns: 310px 1fr; }
+    .bgfx {
+      position: fixed; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(900px 600px at 18% 10%, rgba(139,92,246,0.16), transparent 60%),
+        radial-gradient(800px 520px at 88% 18%, rgba(34,197,94,0.10), transparent 60%),
+        radial-gradient(900px 700px at 40% 90%, rgba(59,130,246,0.08), transparent 60%);
+      filter: saturate(120%);
+      opacity: 0.95;
+    }
+
+    .sidebar {
+      padding: 18px 16px;
+      background: rgba(255,255,255,0.02);
+      border-right: 1px solid var(--stroke);
+      backdrop-filter: var(--glass);
+      -webkit-backdrop-filter: var(--glass);
+      overflow: hidden;
+      position: relative;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 10px 14px;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+    }
+    .logo {
+      width: 44px; height: 44px;
+      border-radius: 14px;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, rgba(139,92,246,0.50), rgba(34,197,94,0.28));
+      border: 1px solid rgba(255,255,255,0.16);
+    }
+    .brand h1 { font-size: 14px; margin: 0; letter-spacing: 0.2px; }
+    .brand p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+
+    .nav { margin-top: 14px; display: grid; gap: 10px; }
+    .nav button {
+      width: 100%;
+      text-align: left;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text);
+      padding: 12px 12px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: transform .12s var(--ease), background .2s var(--ease), border-color .2s var(--ease);
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+    .nav button:hover { background: rgba(255,255,255,0.05); transform: translateY(-1px); }
+    .nav button.active {
+      background: linear-gradient(180deg, rgba(139,92,246,0.18), rgba(255,255,255,0.04));
+      border-color: rgba(139,92,246,0.26);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+    }
+    .nav .dot {
+      width: 10px; height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.26);
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.05);
+    }
+    .nav button.active .dot {
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(139,92,246,0.18);
+    }
+
+    .sideFooter {
+      position: absolute;
+      left: 16px; right: 16px; bottom: 16px;
+      display: grid; gap: 10px;
+    }
+    .sideCard {
+      padding: 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.04);
+    }
+    .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .kpi {
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.04);
+    }
+    .kpi .label { font-size: 12px; color: var(--muted); font-weight: 800; }
+    .kpi .value { font-size: 20px; font-weight: 950; margin-top: 6px; }
+
+    .main { display: grid; grid-template-rows: auto 1fr; min-width: 0; }
+    .topbar {
+      padding: 18px 22px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.02);
+      backdrop-filter: var(--glass);
+      -webkit-backdrop-filter: var(--glass);
+    }
+    .titleBlock h2 { margin: 0; font-size: 18px; letter-spacing: 0.2px; }
+    .titleBlock p { margin: 6px 0 0; color: var(--muted); font-weight: 700; font-size: 13px; }
+
+    .actions { display: flex; align-items: center; gap: 10px; }
+    .pill {
+      display:flex; align-items:center; gap:8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.04);
+    }
+    .pill label { font-size: 12px; color: var(--muted); font-weight: 900; }
+    .pill select { border: none; outline: none; background: transparent; color: var(--text); font-weight: 900; cursor: pointer; }
+
+    .btn {
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      padding: 11px 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 950;
+      transition: transform .12s var(--ease), background .2s var(--ease), border-color .2s var(--ease);
+    }
+    .btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.08); }
+    .btn:focus { outline: none; box-shadow: var(--focus); }
+    .btn.primary {
+      border-color: rgba(139,92,246,0.35);
+      background: linear-gradient(180deg, rgba(139,92,246,0.92), rgba(139,92,246,0.55));
+      color: #0b1220;
+    }
+    .btn.danger {
+      border-color: rgba(239,68,68,0.35);
+      background: linear-gradient(180deg, rgba(239,68,68,0.90), rgba(239,68,68,0.55));
+      color: #0b1220;
+    }
+    .btn.ghost {
+      background: transparent;
+      border-color: transparent;
+      color: var(--muted);
+    }
+    .btn.ghost:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+
+    .content { padding: 18px 22px 22px; overflow: auto; }
+
+    .grid { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 14px; }
+    .card {
+      border-radius: var(--radius2);
+      border: 1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .cardHeader { padding: 16px 16px 10px; display:flex; align-items:flex-end; justify-content:space-between; gap: 12px; }
+    .cardHeader h3 { margin:0; font-size: 15px; letter-spacing: 0.2px; }
+    .cardHeader .sub { margin:6px 0 0; color: var(--muted); font-size: 12px; font-weight: 800; }
+    .cardBody { padding: 14px 16px 16px; }
+
+    .bigStat { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .statBox {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.04);
+      min-height: 84px;
+    }
+    .statBox .label { font-size: 12px; color: var(--muted); font-weight: 900; }
+    .statBox .value { font-size: 22px; font-weight: 950; margin-top: 6px; }
+    .statBox.accent .value { color: var(--accent); }
+    .statBox.danger .value { color: var(--danger); }
+    .statBox.ok .value { color: var(--accent2); }
+
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .field { display:grid; gap: 6px; }
+    .field label { font-size: 12px; color: var(--muted); font-weight: 900; }
+    .input, .textarea, .select {
+      width: 100%;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      outline: none;
+      transition: box-shadow .15s var(--ease), border-color .15s var(--ease), background .2s var(--ease);
+      font-weight: 850;
+    }
+    .textarea { min-height: 120px; resize: vertical; }
+    .input:focus, .textarea:focus, .select:focus {
+      box-shadow: var(--focus);
+      border-color: rgba(139,92,246,0.35);
+      background: rgba(255,255,255,0.07);
+    }
+    .hint { font-size: 12px; color: var(--muted); font-weight: 750; line-height: 1.4; }
+
+    .segmented {
+      display:flex; gap: 8px; flex-wrap: wrap;
+      border-radius: 16px;
+      padding: 6px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--stroke);
+    }
+    .segmented button {
+      flex: 1; min-width: 170px;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 950;
+      cursor: pointer;
+      transition: background .2s var(--ease), color .2s var(--ease), transform .12s var(--ease);
+    }
+    .segmented button:hover { transform: translateY(-1px); color: var(--text); background: rgba(255,255,255,0.04); }
+    .segmented button.active {
+      background: linear-gradient(180deg, rgba(139,92,246,0.20), rgba(255,255,255,0.04));
+      border-color: rgba(139,92,246,0.22);
+      color: var(--text);
+    }
+
+    .list { display: grid; gap: 10px; }
+    .item {
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.04);
+      display: grid;
+      gap: 8px;
+      transition: transform .12s var(--ease), background .2s var(--ease);
+      cursor: default;
+    }
+    .item.clickable{ cursor: pointer; }
+    .item:hover { transform: translateY(-1px); background: rgba(255,255,255,0.06); }
+    .itemTop { display:flex; align-items:center; justify-content:space-between; gap: 12px; }
+    .badge {
+      display:inline-flex; align-items:center; gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.04);
+      font-weight: 950;
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .badge.accent { color: var(--accent); border-color: rgba(139,92,246,0.22); }
+    .badge.ok { color: var(--accent2); border-color: rgba(34,197,94,0.22); }
+    .badge.danger { color: var(--danger); border-color: rgba(239,68,68,0.22); }
+    .itemTitle { font-weight: 950; font-size: 14px; letter-spacing: 0.2px; }
+    .itemMeta { color: var(--muted); font-weight: 800; font-size: 12px; }
+    .itemActions { display:flex; gap: 8px; flex-wrap: wrap; }
+
+    .board { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .bucket {
+      border-radius: var(--radius2);
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.03);
+      overflow: hidden;
+    }
+    .bucketHead {
+      padding: 14px 14px 10px;
+      display:flex; align-items:center; justify-content:space-between;
+      border-bottom: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.03);
+    }
+    .bucketHead .t { font-weight: 950; }
+    .bucketBody { padding: 12px; display:grid; gap: 8px; }
+    .chipBtn {
+      padding: 12px 12px;
+      border-radius: 16px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 900;
+      text-align: left;
+      transition: transform .12s var(--ease), background .2s var(--ease);
+    }
+    .chipBtn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.06); }
+    .chipBtn.assigned { background: rgba(139,92,246,0.16); border-color: rgba(139,92,246,0.26); }
+
+    .modalBackdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.58);
+      display:none;
+      align-items:center; justify-content:center;
+      padding: 18px;
+      z-index: 50;
+    }
+    .modalBackdrop.show { display:flex; }
+    .modal {
+      width: min(520px, 100%);
+      border-radius: 26px;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      box-shadow: var(--shadow);
+      backdrop-filter: var(--glass);
+      -webkit-backdrop-filter: var(--glass);
+      overflow: hidden;
+      transform: translateY(10px) scale(0.98);
+      opacity: 0;
+      transition: transform .16s var(--ease), opacity .16s var(--ease);
+    }
+    .modalBackdrop.show .modal { transform: translateY(0) scale(1); opacity: 1; }
+    .modalHead { padding: 16px 16px 10px; border-bottom: 1px solid var(--stroke); }
+    .modalHead h4 { margin: 0; font-size: 15px; }
+    .modalBody { padding: 14px 16px 16px; color: var(--muted); font-weight: 800; line-height: 1.5; }
+    .modalFoot { padding: 14px 16px 16px; display:flex; justify-content:flex-end; gap: 10px; flex-wrap: wrap; }
+
+    .toast {
+      position: fixed;
+      right: 18px; bottom: 18px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.07);
+      box-shadow: var(--shadow);
+      display:none;
+      z-index: 60;
+      max-width: min(420px, calc(100% - 36px));
+      backdrop-filter: var(--glass);
+      -webkit-backdrop-filter: var(--glass);
+      font-weight: 950;
+    }
+    .toast.show { display:block; animation: pop .18s var(--ease); }
+    @keyframes pop { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    @media (max-width: 980px) {
+      body { overflow: auto; }
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: sticky; top: 0; z-index: 5; }
+      .sideFooter { position: static; margin-top: 12px; }
+      .grid { grid-template-columns: 1fr; }
+      .bigStat { grid-template-columns: 1fr; }
+      .board { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body data-theme="aurora">
+  <div class="bgfx"></div>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M5 19V6.8c0-.4.46-.62.77-.36L12 11l6.23-4.56c.31-.26.77-.04.77.36V19" stroke="rgba(255,255,255,0.9)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Rimborsi Volontari</h1>
+          <p>Servizi, pagamenti, penalità, note.</p>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav">
+        <button class="active" data-page="dashboard"><span class="dot"></span>Dashboard</button>
+        <button data-page="volontari"><span class="dot"></span>Volontari</button>
+        <button data-page="servizi"><span class="dot"></span>Nuovo servizio</button>
+        <button data-page="assegna"><span class="dot"></span>Assegna volontari</button>
+        <button data-page="riepilogo"><span class="dot"></span>Riepilogo / Pagamenti</button>
+        <button data-page="note"><span class="dot"></span>Note (protette)</button>
+        <button data-page="impostazioni"><span class="dot"></span>Impostazioni</button>
+      </nav>
+
+      <div class="sideFooter">
+        <div class="sideCard">
+          <div class="kpis">
+            <div class="kpi">
+              <div class="label">Volontari</div>
+              <div class="value" id="kpiVol">0</div>
+            </div>
+            <div class="kpi">
+              <div class="label">Servizi</div>
+              <div class="value" id="kpiServ">0</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn ghost" id="btnExport">Esporta backup</button>
+        <button class="btn ghost" id="btnImport">Importa backup</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="titleBlock">
+          <h2 id="pageTitle">Dashboard</h2>
+          <p id="pageSubtitle">Panoramica rapida e ultimi servizi registrati.</p>
+        </div>
+
+        <div class="actions">
+          <div class="pill">
+            <label for="themeSel">Tema</label>
+            <select id="themeSel" aria-label="Tema">
+              <option value="aurora">Aurora</option>
+              <option value="emerald">Smeraldo</option>
+              <option value="graphite">Grafite</option>
+              <option value="sand">Sabbia</option>
+              <option value="light">Chiaro</option>
+            </select>
+          </div>
+          <button class="btn" id="btnFullscreen">Fullscreen</button>
+          <button class="btn primary" id="btnQuickAdd">+ Servizio</button>
+        </div>
+      </header>
+
+      <section class="content" id="content"></section>
+    </main>
+  </div>
+
+  <div class="modalBackdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document">
+      <div class="modalHead">
+        <h4 id="modalTitle">Titolo</h4>
+      </div>
+      <div class="modalBody" id="modalBody">Testo</div>
+      <div class="modalFoot" id="modalFoot"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = "rimborsi_app_v2";
+
+function nowISODate(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+function isoToIT(iso){
+  if(!iso) return "";
+  const [y,m,d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+function itToISO(it){
+  const s = (it||"").trim();
+  const parts = s.split("/");
+  if(parts.length !== 3) return null;
+  const [d,m,y] = parts.map(x=>x.trim());
+  if(!d||!m||!y) return null;
+  const dd = String(parseInt(d,10)).padStart(2,"0");
+  const mm = String(parseInt(m,10)).padStart(2,"0");
+  const yy = String(parseInt(y,10));
+  if(yy.length !== 4) return null;
+  return `${yy}-${mm}-${dd}`;
+}
+function loadDB(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){
+    try { return JSON.parse(raw); } catch {}
+  }
+  return {
+    settings: { theme: "aurora", passwordHash: "", fullscreen: false },
+    seq: { vol: 1, srv: 1, pay: 1, pen: 1, attr: 1 },
+    volontari: [],
+    attributi: [],
+    volontario_attributi: [],
+    servizi: [],
+    partecipazioni: [],
+    pagamenti: [],
+    penalita: [],
+    note: []
+  };
+}
+function saveDB(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+  refreshKPIs();
+}
+let DB = loadDB();
+
+const $ = (q, el=document) => el.querySelector(q);
+const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
+
+function toast(msg){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._to);
+  t._to = setTimeout(()=>t.classList.remove("show"), 2600);
+}
+
+let modalState = { onClose: null };
+function modal({title, body, actions=[]}){
+  const back = $("#modalBackdrop");
+  $("#modalTitle").textContent = title || "";
+  $("#modalBody").innerHTML = body || "";
+  const foot = $("#modalFoot");
+  foot.innerHTML = "";
+  actions.forEach(a=>{
+    const b = document.createElement("button");
+    b.className = "btn " + (a.kind||"");
+    b.textContent = a.label;
+    b.onclick = () => { if(a.onClick) a.onClick(); };
+    foot.appendChild(b);
+  });
+
+  back.classList.add("show");
+  back.setAttribute("aria-hidden","false");
+  back.onclick = (e)=>{ if(e.target === back) closeModal(); };
+  document.addEventListener("keydown", escClose);
+}
+function closeModal(){
+  const back = $("#modalBackdrop");
+  back.classList.remove("show");
+  back.setAttribute("aria-hidden","true");
+  document.removeEventListener("keydown", escClose);
+  if(modalState.onClose){ const cb = modalState.onClose; modalState.onClose = null; cb(); }
+}
+function escClose(e){ if(e.key === "Escape") closeModal(); }
+
+async function sha256(text){
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+function getVolontari(){
+  return DB.volontari.slice().sort((a,b)=>a.nome.localeCompare(b.nome, "it", {sensitivity:"base"}));
+}
+function addVolontario(nome){
+  nome = (nome||"").trim();
+  if(!nome) return false;
+  const exists = DB.volontari.some(v=>v.nome.toLowerCase()===nome.toLowerCase());
+  if(exists) return false;
+  DB.volontari.push({id: DB.seq.vol++, nome});
+  saveDB();
+  return true;
+}
+function deleteVolontario(id){
+  DB.partecipazioni = DB.partecipazioni.filter(p=>p.volontario_id!==id);
+  DB.pagamenti = DB.pagamenti.filter(p=>p.volontario_id!==id);
+  DB.penalita = DB.penalita.filter(p=>p.volontario_id!==id);
+  DB.volontario_attributi = DB.volontario_attributi.filter(x=>x.volontario_id!==id);
+  DB.note = DB.note.filter(n=>n.volontario_id!==id);
+  DB.volontari = DB.volontari.filter(v=>v.id!==id);
+  saveDB();
+}
+
+function getAttributi(){
+  return DB.attributi.slice().sort((a,b)=>a.nome.localeCompare(b.nome, "it", {sensitivity:"base"}));
+}
+function addAttributo(nome){
+  nome = (nome||"").trim();
+  if(!nome) return false;
+  const exists = DB.attributi.some(a=>a.nome.toLowerCase()===nome.toLowerCase());
+  if(exists) return false;
+  DB.attributi.push({id: DB.seq.attr++, nome});
+  saveDB();
+  return true;
+}
+function deleteAttributo(id){
+  DB.volontario_attributi = DB.volontario_attributi.filter(x=>x.attributo_id!==id);
+  DB.attributi = DB.attributi.filter(a=>a.id!==id);
+  saveDB();
+}
+function getAttributiVolontario(volId){
+  const ids = DB.volontario_attributi.filter(x=>x.volontario_id===volId).map(x=>x.attributo_id);
+  return getAttributi().filter(a=>ids.includes(a.id));
+}
+function setAttributiVolontario(volId, attrIds){
+  DB.volontario_attributi = DB.volontario_attributi.filter(x=>x.volontario_id!==volId);
+  (attrIds||[]).forEach(aid=>DB.volontario_attributi.push({volontario_id: volId, attributo_id: aid}));
+  saveDB();
+}
+
+function getServizi(){
+  return DB.servizi.slice().sort((a,b)=>{
+    if(a.data !== b.data) return b.data.localeCompare(a.data);
+    return b.id - a.id;
+  });
+}
+function addServizio({data, descrizione, rimborso, rimborso_tipo}){
+  DB.servizi.push({
+    id: DB.seq.srv++,
+    data,
+    descrizione: descrizione||"",
+    rimborso: Number(rimborso||0),
+    rimborso_tipo: rimborso_tipo || "per_volontario"
+  });
+  saveDB();
+}
+function getPartecipazioniServizio(sid){
+  const volIds = DB.partecipazioni.filter(p=>p.servizio_id===sid).map(p=>p.volontario_id);
+  return getVolontari().filter(v=>volIds.includes(v.id));
+}
+function setPartecipazioni(sid, volIds){
+  DB.partecipazioni = DB.partecipazioni.filter(p=>p.servizio_id!==sid);
+  (volIds||[]).forEach(vid=>DB.partecipazioni.push({servizio_id:sid, volontario_id:vid}));
+  saveDB();
+}
+
+function addPagamento({volontario_id, data, importo, note}){
+  DB.pagamenti.push({id: DB.seq.pay++, volontario_id, data, importo:Number(importo), note: note||""});
+  saveDB();
+}
+function addPenalita({volontario_id, data, importo, note}){
+  DB.penalita.push({id: DB.seq.pen++, volontario_id, data, importo:Number(importo), note: note||""});
+  saveDB();
+}
+function sum(arr, key){ return arr.reduce((acc,x)=>acc + (Number(x[key])||0), 0); }
+function getPagamentiVolontario(volId, ym=null){
+  return DB.pagamenti
+    .filter(p=>p.volontario_id===volId)
+    .filter(p=>!ym || p.data.startsWith(ym))
+    .sort((a,b)=> (b.data!==a.data ? b.data.localeCompare(a.data) : b.id-a.id));
+}
+function getPenalitaVolontario(volId, ym=null){
+  return DB.penalita
+    .filter(p=>p.volontario_id===volId)
+    .filter(p=>!ym || p.data.startsWith(ym))
+    .sort((a,b)=> (b.data!==a.data ? b.data.localeCompare(a.data) : b.id-a.id));
+}
+function getServiziVolontario(volId, ym=null){
+  const parts = DB.partecipazioni.filter(p=>p.volontario_id===volId).map(p=>p.servizio_id);
+  const servizi = DB.servizi
+    .filter(s=>parts.includes(s.id))
+    .filter(s=>!ym || s.data.startsWith(ym))
+    .sort((a,b)=>a.data.localeCompare(b.data));
+  return servizi.map(s=>{
+    let quota = s.rimborso;
+    if(s.rimborso_tipo === "totale"){
+      const count = DB.partecipazioni.filter(p=>p.servizio_id===s.id).length || 0;
+      quota = count ? (s.rimborso / count) : 0;
+    }
+    return {data:s.data, descrizione:s.descrizione, quota};
+  });
+}
+function getTotaleDovuto(volId, ym=null){
+  return sum(getServiziVolontario(volId, ym), "quota");
+}
+function getNota(volId){
+  const n = DB.note.find(x=>x.volontario_id===volId);
+  return n ? (n.nota||"") : "";
+}
+function setNota(volId, nota){
+  const idx = DB.note.findIndex(x=>x.volontario_id===volId);
+  if(idx>=0) DB.note[idx].nota = nota||"";
+  else DB.note.push({volontario_id:volId, nota:nota||""});
+  saveDB();
+}
+
+function getStatsGlobal(){
+  const numVol = DB.volontari.length;
+  const numServ = DB.servizi.length;
+  let totaleDovuto = 0;
+  DB.volontari.forEach(v=>{ totaleDovuto += getTotaleDovuto(v.id, null); });
+  const totalePagato = sum(DB.pagamenti, "importo");
+  const totalePen = sum(DB.penalita, "importo");
+  let debito = totaleDovuto - totalePagato - totalePen;
+  if(debito < 0) debito = 0;
+  return {numVol, numServ, debito};
+}
+function refreshKPIs(){
+  const s = getStatsGlobal();
+  $("#kpiVol").textContent = s.numVol;
+  $("#kpiServ").textContent = s.numServ;
+}
+
+function escapeHtml(str){
+  return String(str||"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function mount(html){ $("#content").innerHTML = html; }
+
+const PAGES = {
+  dashboard: { title:"Dashboard", subtitle:"Panoramica rapida e ultimi servizi registrati.", render: renderDashboard },
+  volontari: { title:"Volontari", subtitle:"Gestisci anagrafiche e attributi.", render: renderVolontari },
+  servizi: { title:"Nuovo servizio", subtitle:"Crea un servizio e poi assegna i volontari.", render: renderNuovoServizio },
+  assegna: { title:"Assegna volontari", subtitle:"Seleziona un servizio e sposta i nomi con un click.", render: renderAssegna },
+  riepilogo: { title:"Riepilogo / Pagamenti", subtitle:"Filtra per mese, registra pagamenti e penalità.", render: renderRiepilogo },
+  note: { title:"Note (protette)", subtitle:"Area riservata con password (se impostata).", render: renderNote },
+  impostazioni: { title:"Impostazioni", subtitle:"Tema, password, backup/import e reset.", render: renderImpostazioni }
+};
+
+let currentPage = "dashboard";
+
+function setPage(page){
+  currentPage = page;
+  $$("#nav button").forEach(b=>b.classList.toggle("active", b.dataset.page===page));
+  $("#pageTitle").textContent = PAGES[page].title;
+  $("#pageSubtitle").textContent = PAGES[page].subtitle;
+  PAGES[page].render();
+  $("#content").scrollTo({top:0, behavior:"smooth"});
+}
+
+function setTheme(theme){
+  document.body.setAttribute("data-theme", theme);
+  DB.settings.theme = theme;
+  saveDB();
+  $("#themeSel").value = theme;
+}
+function toggleFullscreen(){
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen?.();
+    DB.settings.fullscreen = true;
+  } else {
+    document.exitFullscreen?.();
+    DB.settings.fullscreen = false;
+  }
+  saveDB();
+}
+
+async function passwordPrompt(){
+  return new Promise((resolve)=>{
+    modalState.onClose = ()=>resolve(false);
+    modal({
+      title:"Accesso Note",
+      body: `
+        <div class="field">
+          <label>Inserisci password</label>
+          <input class="input" id="pwdPrompt" type="password" placeholder="••••" />
+          <div class="hint" id="pwdErr" style="color:var(--danger); display:none; margin-top:8px;">Password errata.</div>
+        </div>
+      `,
+      actions:[
+        {label:"Annulla", kind:"ghost", onClick: ()=>{ modalState.onClose=null; closeModal(); resolve(false); }},
+        {label:"OK", kind:"primary", onClick: async ()=>{
+          const v = $("#pwdPrompt").value || "";
+          const h = await sha256(v);
+          if(h === DB.settings.passwordHash){
+            modalState.onClose=null;
+            closeModal();
+            resolve(true);
+          } else {
+            $("#pwdErr").style.display = "block";
+            $("#pwdPrompt").focus();
+          }
+        }}
+      ]
+    });
+    setTimeout(()=>$("#pwdPrompt")?.focus(), 50);
+  });
+}
+
+function exportBackup(){
+  const blob = new Blob([JSON.stringify(DB, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `rimborsi_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast("Backup esportato.");
+}
+function importBackup(){
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "application/json";
+  input.onchange = async ()=>{
+    const file = input.files?.[0];
+    if(!file) return;
+    const text = await file.text();
+    try{
+      const data = JSON.parse(text);
+      modal({
+        title:"Import backup",
+        body:"Importare sovrascriverà i dati attuali. Continuare?",
+        actions:[
+          {label:"Annulla", kind:"ghost", onClick: ()=>closeModal()},
+          {label:"Importa", kind:"primary", onClick: ()=>{
+            DB = data;
+            saveDB();
+            applyInitialSettings();
+            toast("Backup importato.");
+            closeModal();
+            setPage("dashboard");
+          }}
+        ]
+      });
+    } catch {
+      toast("File non valido.");
+    }
+  };
+  input.click();
+}
+
+function applyInitialSettings(){
+  setTheme(DB.settings.theme || "aurora");
+  $("#themeSel").value = DB.settings.theme || "aurora";
+}
+
+function renderDashboard(){
+  const stats = getStatsGlobal();
+  const ultimi = getServizi().slice(0, 20);
+
+  mount(`
+    <div class="grid">
+      <div class="card">
+        <div class="cardHeader">
+          <div>
+            <h3>Stato generale</h3>
+            <div class="sub">Numeri chiari, niente caos.</div>
+          </div>
+          <span class="badge accent">Residuo globale</span>
+        </div>
+        <div class="cardBody">
+          <div class="bigStat">
+            <div class="statBox">
+              <div class="label">Volontari</div>
+              <div class="value">${stats.numVol}</div>
+            </div>
+            <div class="statBox">
+              <div class="label">Servizi</div>
+              <div class="value">${stats.numServ}</div>
+            </div>
+            <div class="statBox accent">
+              <div class="label">Residuo</div>
+              <div class="value">€ ${stats.debito.toFixed(2)}</div>
+            </div>
+          </div>
+          <div style="margin-top:12px" class="hint">
+            Il residuo = dovuto - pagamenti - penalità. Assegna volontari dopo ogni servizio per evitare “misteri”.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardHeader">
+          <div>
+            <h3>Azioni rapide</h3>
+            <div class="sub">Per non perdere tempo.</div>
+          </div>
+        </div>
+        <div class="cardBody" style="display:grid; gap:10px;">
+          <button class="btn primary" id="goNewSrv">+ Crea nuovo servizio</button>
+          <button class="btn" id="goAssign">Assegna volontari</button>
+          <button class="btn" id="goRiepilogo">Apri riepilogo</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:14px"></div>
+
+    <div class="card">
+      <div class="cardHeader">
+        <div>
+          <h3>Ultimi servizi</h3>
+          <div class="sub">Clicca un servizio per i dettagli.</div>
+        </div>
+        <span class="badge">Max 20</span>
+      </div>
+      <div class="cardBody">
+        <div class="list" id="srvList">
+          ${ultimi.length ? ultimi.map(s=>{
+            const rimTxt = s.rimborso_tipo==="totale" ? `€ ${s.rimborso.toFixed(2)} totali` : `€ ${s.rimborso.toFixed(2)} cad.`;
+            const count = DB.partecipazioni.filter(p=>p.servizio_id===s.id).length;
+            return `
+              <div class="item clickable" data-sid="${s.id}">
+                <div class="itemTop">
+                  <div>
+                    <div class="itemTitle">${escapeHtml(s.descrizione || "(senza descrizione)")}</div>
+                    <div class="itemMeta">${isoToIT(s.data)} • ${rimTxt} • Partecipanti: ${count}</div>
+                  </div>
+                  <span class="badge ${count? "ok":"danger"}">${count? "assegnato":"manca"}</span>
+                </div>
+              </div>
+            `;
+          }).join("") : `<div class="hint">Nessun servizio registrato. Clicca “+ Servizio”.</div>`}
+        </div>
+      </div>
+    </div>
+  `);
+
+  $("#goNewSrv").onclick = ()=>setPage("servizi");
+  $("#goAssign").onclick = ()=>setPage("assegna");
+  $("#goRiepilogo").onclick = ()=>setPage("riepilogo");
+
+  $$("#srvList .item").forEach(el=>{
+    el.onclick = ()=>{
+      const sid = Number(el.dataset.sid);
+      const s = DB.servizi.find(x=>x.id===sid);
+      const parts = getPartecipazioniServizio(sid);
+      const list = parts.length ? parts.map(v=>{
+        const attrs = getAttributiVolontario(v.id).map(a=>a.nome).join(", ") || "nessuno";
+        return `<li><b>${escapeHtml(v.nome)}</b> <span style="color:var(--muted)">(${escapeHtml(attrs)})</span></li>`;
+      }).join("") : `<div class="hint">Nessun volontario assegnato.</div>`;
+      modal({
+        title: "Dettaglio servizio",
+        body: `
+          <div class="hint"><b>${escapeHtml(s.descrizione||"(senza descrizione)")}</b></div>
+          <div class="hint" style="margin-top:6px;">Data: ${isoToIT(s.data)} • Rimborso: ${s.rimborso_tipo==="totale" ? `€ ${s.rimborso.toFixed(2)} totali` : `€ ${s.rimborso.toFixed(2)} per volontario`}</div>
+          <hr style="border:none;border-top:1px solid var(--stroke);margin:12px 0;">
+          <div class="hint" style="margin-bottom:6px;">Volontari presenti:</div>
+          <ul style="margin:0;padding-left:18px;display:grid;gap:6px;">${list}</ul>
+        `,
+        actions: [
+          {label:"Chiudi", kind:"ghost", onClick: ()=>closeModal()},
+          {label:"Vai ad assegnazione", kind:"primary", onClick: ()=>{ closeModal(); setPage("assegna"); }}
+        ]
+      });
+    };
+  });
+}
+
+function renderVolontari(){
+  const volontari = getVolontari();
+  const attrs = getAttributi();
+
+  mount(`
+    <div class="grid">
+      <div class="card">
+        <div class="cardHeader">
+          <div>
+            <h3>Volontari</h3>
+            <div class="sub">Aggiungi, cerca, gestisci attributi.</div>
+          </div>
+          <span class="badge">${volontari.length} totali</span>
+        </div>
+        <div class="cardBody">
+          <div class="row">
+            <div class="field">
+              <label>Nuovo volontario</label>
+              <input class="input" id="newVol" placeholder="Nome e cognome" />
+            </div>
+            <div class="field" style="align-content:end;">
+              <button class="btn primary" id="addVolBtn">Aggiungi</button>
+            </div>
+          </div>
+          <div style="height:10px"></div>
+          <div class="field">
+            <label>Ricerca</label>
+            <input class="input" id="searchVol" placeholder="Cerca..." />
+          </div>
+          <div style="height:12px"></div>
+          <div class="list" id="volList"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardHeader">
+          <div>
+            <h3>Attributi</h3>
+            <div class="sub">Es. Autista, Caposquadra, ecc.</div>
+          </div>
+          <span class="badge">${attrs.length} creati</span>
+        </div>
+        <div class="cardBody">
+          <div class="row">
+            <div class="field">
+              <label>Nuovo attributo</label>
+              <input class="input" id="newAttr" placeholder="Es. Autista" />
+            </div>
+            <div class="field" style="align-content:end;">
+              <button class="btn primary" id="addAttrBtn">Aggiungi</button>
+            </div>
+          </div>
+          <div style="height:12px"></div>
+          <div class="list">
+            ${attrs.length ? attrs.map(a=>`
+              <div class="item">
+                <div class="itemTop">
+                  <div class="itemTitle">${escapeHtml(a.nome)}</div>
+                  <div class="itemActions">
+                    <button class="btn danger" data-delattr="${a.id}">Elimina</button>
+                  </div>
+                </div>
+              </div>
+            `).join("") : `<div class="hint">Nessun attributo ancora. Creane uno.</div>`}
+          </div>
+        </div>
+      </div>
+    </div>
+  `);
+
+  function paintList(){
+    const filtro = ($("#searchVol").value||"").trim().toLowerCase();
+    const list = $("#volList");
+    const filtered = volontari.filter(v=>!filtro || v.nome.toLowerCase().includes(filtro));
+
+    list.innerHTML = filtered.length ? filtered.map(v=>{
+      const at = getAttributiVolontario(v.id).map(a=>a.nome).join(", ") || "Nessuno";
+      return `
+        <div class="item">
+          <div class="itemTop">
+            <div>
+              <div class="itemTitle">${escapeHtml(v.nome)}</div>
+              <div class="itemMeta">Attributi: ${escapeHtml(at)}</div>
+            </div>
+            <div class="itemActions">
+              <button class="btn" data-attrs="${v.id}">Attributi</button>
+              <button class="btn danger" data-delvol="${v.id}">Elimina</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("") : `<div class="hint">Nessun volontario trovato.</div>`;
+
+    $$("[data-delvol]").forEach(b=>{
+      b.onclick = ()=>{
+        const id = Number(b.dataset.delvol);
+        const v = DB.volontari.find(x=>x.id===id);
+        modal({
+          title: "Conferma eliminazione",
+          body: `Vuoi eliminare <b>${escapeHtml(v?.nome||"")}</b>?<br><br>Verranno rimossi anche partecipazioni, pagamenti, penalità e note.`,
+          actions: [
+            {label:"Annulla", kind:"ghost", onClick: ()=>closeModal()},
+            {label:"Elimina", kind:"danger", onClick: ()=>{
+              deleteVolontario(id);
+              closeModal();
+              toast("Volontario eliminato.");
+              renderVolontari();
+            }}
+          ]
+        });
+      };
+    });
+
+    $$("[data-attrs]").forEach(b=>{
+      b.onclick = ()=>{
+        const volId = Number(b.dataset.attrs);
+        const v = DB.volontari.find(x=>x.id===volId);
+        const all = getAttributi();
+        if(!all.length){ toast("Prima crea almeno un attributo."); return; }
+        const assigned = new Set(getAttributiVolontario(volId).map(a=>a.id));
+        const checks = all.map(a=>{
+          const on = assigned.has(a.id);
+          return `
+            <div class="item" style="gap:10px;">
+              <div class="itemTop" style="align-items:center;">
+                <div class="itemTitle">${escapeHtml(a.nome)}</div>
+                <label class="badge ${on?"ok":""}" style="cursor:pointer;">
+                  <input type="checkbox" data-attrcheck="${a.id}" ${on?"checked":""} style="transform:scale(1.15);margin-right:8px;">
+                  ${on?"Assegnato":"Non assegnato"}
+                </label>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        modal({
+          title: `Attributi: ${escapeHtml(v?.nome||"")}`,
+          body: `<div style="display:grid;gap:10px;">${checks}</div>`,
+          actions: [
+            {label:"Chiudi", kind:"ghost", onClick: ()=>closeModal()},
+            {label:"Salva", kind:"primary", onClick: ()=>{
+              const ids = $$("[data-attrcheck]").filter(x=>x.checked).map(x=>Number(x.dataset.attrcheck));
+              setAttributiVolontario(volId, ids);
+              closeModal();
+              toast("Attributi salvati.");
+              renderVolontari();
+            }}
+          ]
+        });
+      };
+    });
+  }
+
+  $("#addVolBtn").onclick = ()=>{
+    const ok = addVolontario($("#newVol").value);
+    if(!ok) toast("Nome vuoto o già esistente.");
+    else { toast("Volontario aggiunto."); renderVolontari(); }
+  };
+  $("#newVol").addEventListener("keydown",(e)=>{ if(e.key==="Enter") $("#addVolBtn").click(); });
+
+  $("#addAttrBtn").onclick = ()=>{
+    const ok = addAttributo($("#newAttr").value);
+    if(!ok) toast("Attributo vuoto o già esistente.");
+    else { toast("Attributo aggiunto."); renderVolontari(); }
+  };
+  $$("[data-delattr]").forEach(b=>{
+    b.onclick = ()=>{
+      const id = Number(b.dataset.delattr);
+      const a = DB.attributi.find(x=>x.id===id);
+      modal({
+        title: "Elimina attributo",
+        body: `Rimuovere <b>${escapeHtml(a?.nome||"")}</b> da tutti i volontari?`,
+        actions: [
+          {label:"Annulla", kind:"ghost", onClick: ()=>closeModal()},
+          {label:"Elimina", kind:"danger", onClick: ()=>{ deleteAttributo(id); closeModal(); toast("Attributo eliminato."); renderVolontari(); }}
+        ]
+      });
+    };
+  });
+
+  $("#searchVol").addEventListener("input", paintList);
+  paintList();
+}
+
+function renderNuovoServizio(){
+  const today = nowISODate();
+
+  mount(`
+    <div class="card">
+      <div class="cardHeader">
+        <div>
+          <h3>Crea servizio</h3>
+          <div class="sub">Modalità rimborso semplice e chiara.</div>
+        </div>
+        <span class="badge accent">Salvataggio immediato</span>
+      </div>
+      <div class="cardBody">
+        <div class="row">
+          <div class="field">
+            <label>Data</label>
+            <input class="input" id="srvDate" type="date" value="${today}" />
+          </div>
+          <div class="field">
+            <label>Descrizione</label>
+            <input class="input" id="srvDesc" placeholder="Es. Gara ciclistica, servizio notturno..." />
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="field">
+          <label>Modalità rimborso</label>
+          <div class="segmented">
+            <button id="modePer" class="active" type="button">Per volontario</button>
+            <button id="modeTot" type="button">Totale da dividere</button>
+          </div>
+          <div class="hint" id="modeHint" style="margin-top:8px;">Ogni volontario assegnato riceve lo stesso importo.</div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="row">
+          <div class="field">
+            <label id="rimbLabel">Importo per volontario (€)</label>
+            <input class="input" id="srvRimb" inputmode="decimal" placeholder="0,00" />
+          </div>
+          <div class="field" style="align-content:end;">
+            <button class="btn primary" id="saveSrv">Salva servizio</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `);
+
+  let mode = "per_volontario";
+  function syncMode(){
+    $("#modePer").classList.toggle("active", mode==="per_volontario");
+    $("#modeTot").classList.toggle("active", mode==="totale");
+    $("#rimbLabel").textContent = mode==="totale" ? "Importo totale (€)" : "Importo per volontario (€)";
+    $("#modeHint").textContent = mode==="totale"
+      ? "L'importo verrà diviso tra i volontari assegnati a questo servizio."
+      : "Ogni volontario assegnato riceve lo stesso importo.";
+  }
+  $("#modePer").onclick = ()=>{ mode="per_volontario"; syncMode(); };
+  $("#modeTot").onclick = ()=>{ mode="totale"; syncMode(); };
+
+  $("#saveSrv").onclick = ()=>{
+    const data = $("#srvDate").value;
+    const descrizione = $("#srvDesc").value.trim();
+    const raw = $("#srvRimb").value.trim().replace(",", ".");
+    const rimborso = Number(raw);
+    if(!data){ toast("Data non valida."); return; }
+    if(!Number.isFinite(rimborso)){ toast("Importo non valido."); return; }
+    addServizio({data, descrizione, rimborso, rimborso_tipo: mode});
+    toast("Servizio creato.");
+    setPage("dashboard");
+  };
+}
+
+function renderAssegna(){
+  const servizi = getServizi();
+  const volontari = getVolontari();
+
+  mount(`
+    <div class="card">
+      <div class="cardHeader">
+        <div>
+          <h3>Assegnazione</h3>
+          <div class="sub">Seleziona un servizio e sposta i volontari.</div>
+        </div>
+        <span class="badge">click-to-move</span>
+      </div>
+      <div class="cardBody">
+        <div class="field">
+          <label>Servizio</label>
+          <select class="select" id="srvSel">
+            <option value="">Seleziona...</option>
+            ${servizi.map(s=>{
+              const rimTxt = s.rimborso_tipo==="totale" ? `€ ${s.rimborso.toFixed(2)} totali` : `€ ${s.rimborso.toFixed(2)} cad.`;
+              return `<option value="${s.id}">${escapeHtml(s.descrizione||"(senza descrizione)")} • ${rimTxt} • ${isoToIT(s.data)}</option>`;
+            }).join("")}
+          </select>
+          <div class="hint">Suggerimento: assegna subito dopo aver creato un servizio.</div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="board">
+          <div class="bucket">
+            <div class="bucketHead"><div class="t">Disponibili</div><span class="badge" id="countAvail">0</span></div>
+            <div class="bucketBody" id="avail"></div>
+          </div>
+          <div class="bucket">
+            <div class="bucketHead"><div class="t">Assegnati</div><span class="badge ok" id="countAss">0</span></div>
+            <div class="bucketBody" id="ass"></div>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;">
+          <button class="btn" id="resetAssign">Ripristina</button>
+          <button class="btn primary" id="saveAssign">Salva assegnazioni</button>
+        </div>
+      </div>
+    </div>
+  `);
+
+  let sid = null;
+  let assigned = [];
+  let available = volontari.map(v=>v.id);
+
+  function renderLists(){
+    $("#countAvail").textContent = available.length;
+    $("#countAss").textContent = assigned.length;
+
+    $("#avail").innerHTML = available
+      .map(id=>volontari.find(v=>v.id===id))
+      .filter(Boolean)
+      .sort((a,b)=>a.nome.localeCompare(b.nome,"it",{sensitivity:"base"}))
+      .map(v=>`<button class="chipBtn" data-add="${v.id}">${escapeHtml(v.nome)}</button>`)
+      .join("") || `<div class="hint">Nessuno disponibile.</div>`;
+
+    $("#ass").innerHTML = assigned
+      .map(id=>volontari.find(v=>v.id===id))
+      .filter(Boolean)
+      .sort((a,b)=>a.nome.localeCompare(b.nome,"it",{sensitivity:"base"}))
+      .map(v=>`<button class="chipBtn assigned" data-rem="${v.id}">${escapeHtml(v.nome)}</button>`)
+      .join("") || `<div class="hint">Nessuno assegnato.</div>`;
+
+    $$("[data-add]").forEach(b=>{
+      b.onclick = ()=>{
+        const id = Number(b.dataset.add);
+        available = available.filter(x=>x!==id);
+        if(!assigned.includes(id)) assigned.push(id);
+        renderLists();
+      };
+    });
+    $$("[data-rem]").forEach(b=>{
+      b.onclick = ()=>{
+        const id = Number(b.dataset.rem);
+        assigned = assigned.filter(x=>x!==id);
+        if(!available.includes(id)) available.push(id);
+        renderLists();
+      };
+    });
+  }
+
+  function load(){
+    sid = Number($("#srvSel").value||0) || null;
+    if(!sid){
+      assigned = [];
+      available = volontari.map(v=>v.id);
+      renderLists();
+      return;
+    }
+    assigned = getPartecipazioniServizio(sid).map(v=>v.id);
+    available = volontari.map(v=>v.id).filter(id=>!assigned.includes(id));
+    renderLists();
+  }
+
+  $("#srvSel").onchange = load;
+  $("#resetAssign").onclick = ()=>{ load(); toast("Ripristinato."); };
+  $("#saveAssign").onclick = ()=>{
+    if(!sid){ toast("Seleziona un servizio."); return; }
+    setPartecipazioni(sid, assigned);
+    toast("Assegnazioni salvate.");
+  };
+
+  load();
+}
+
+function renderRiepilogo(){
+  const volontari = getVolontari();
+  if(!volontari.length){
+    mount(`<div class="card"><div class="cardBody"><div class="hint">Nessun volontario. Vai su “Volontari” e aggiungine uno.</div></div></div>`);
+    return;
+  }
+
+  mount(`
+    <div class="card">
+      <div class="cardHeader">
+        <div>
+          <h3>Riepilogo</h3>
+          <div class="sub">Dovuto, pagato, penalità, residuo.</div>
+        </div>
+        <span class="badge accent">Filtri mese/anno</span>
+      </div>
+      <div class="cardBody">
+        <div class="row3">
+          <div class="field">
+            <label>Volontario</label>
+            <select class="select" id="volSel">
+              ${volontari.map(v=>`<option value="${v.id}">${escapeHtml(v.nome)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label>Mese (1-12)</label>
+            <input class="input" id="month" placeholder="es. 12" inputmode="numeric" />
+          </div>
+          <div class="field">
+            <label>Anno (YYYY)</label>
+            <input class="input" id="year" placeholder="es. 2025" inputmode="numeric" value="${new Date().getFullYear()}" />
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="bigStat" id="statsRow"></div>
+
+        <div style="height:12px"></div>
+
+        <div class="grid">
+          <div class="card" style="box-shadow:none;background:rgba(255,255,255,0.03);">
+            <div class="cardHeader">
+              <div><h3>Servizi</h3><div class="sub">Quote calcolate automaticamente</div></div>
+              <span class="badge" id="srvCount">0</span>
+            </div>
+            <div class="cardBody">
+              <div class="list" id="srvVolList"></div>
+            </div>
+          </div>
+
+          <div class="card" style="box-shadow:none;background:rgba(255,255,255,0.03);">
+            <div class="cardHeader">
+              <div><h3>Pagamenti & Penalità</h3><div class="sub">Registra movimenti</div></div>
+            </div>
+            <div class="cardBody" style="display:grid;gap:12px;">
+              <div class="card" style="box-shadow:none;background:rgba(255,255,255,0.02);">
+                <div class="cardHeader">
+                  <div><h3>Pagamenti</h3><div class="sub">Aggiungi pagamento</div></div>
+                  <span class="badge" id="payCount">0</span>
+                </div>
+                <div class="cardBody">
+                  <div class="row">
+                    <div class="field">
+                      <label>Importo (€)</label>
+                      <input class="input" id="payAmt" placeholder="0,00" inputmode="decimal" />
+                    </div>
+                    <div class="field">
+                      <label>Data (GG/MM/AAAA)</label>
+                      <input class="input" id="payDate" value="${isoToIT(nowISODate())}" />
+                    </div>
+                  </div>
+                  <div style="height:8px"></div>
+                  <div class="field">
+                    <label>Note</label>
+                    <input class="input" id="payNote" placeholder="facoltativo" />
+                  </div>
+                  <div style="height:10px;display:flex;justify-content:flex-end;">
+                    <button class="btn primary" id="addPay">Aggiungi pagamento</button>
+                  </div>
+                  <div class="list" id="payList"></div>
+                </div>
+              </div>
+
+              <div class="card" style="box-shadow:none;background:rgba(255,255,255,0.02);">
+                <div class="cardHeader">
+                  <div><h3>Penalità</h3><div class="sub">Aggiungi penalità</div></div>
+                  <span class="badge danger" id="penCount">0</span>
+                </div>
+                <div class="cardBody">
+                  <div class="row">
+                    <div class="field">
+                      <label>Importo (€)</label>
+                      <input class="input" id="penAmt" placeholder="0,00" inputmode="decimal" />
+                    </div>
+                    <div class="field">
+                      <label>Data (GG/MM/AAAA)</label>
+                      <input class="input" id="penDate" value="${isoToIT(nowISODate())}" />
+                    </div>
+                  </div>
+                  <div style="height:8px"></div>
+                  <div class="field">
+                    <label>Note</label>
+                    <input class="input" id="penNote" placeholder="facoltativo" />
+                  </div>
+                  <div style="height:10px;display:flex;justify-content:flex-end;">
+                    <button class="btn danger" id="addPen">Aggiungi penalità</button>
+                  </div>
+                  <div class="list" id="penList"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:10px;display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;">
+          <button class="btn" id="monthNow">Mese corrente</button>
+          <button class="btn primary" id="refresh">Aggiorna</button>
+        </div>
+      </div>
+    </div>
+  `);
+
+  function ymFromInputs(){
+    const m = ($("#month").value||"").trim();
+    let y = ($("#year").value||"").trim();
+    if(m && !y) y = String(new Date().getFullYear());
+    if(!m || !y) return null;
+    const mm = String(parseInt(m,10)).padStart(2,"0");
+    const yy = String(parseInt(y,10));
+    if(yy.length!==4) return null;
+    return `${yy}-${mm}`;
+  }
+
+  function update(){
+    const volId = Number($("#volSel").value||0);
+    const ym = ymFromInputs();
+
+    const dovuto = getTotaleDovuto(volId, ym);
+    const pag = sum(getPagamentiVolontario(volId, ym), "importo");
+    const pen = sum(getPenalitaVolontario(volId, ym), "importo");
+    let residuo = dovuto - pag - pen;
+    if(residuo < 0) residuo = 0;
+
+    $("#statsRow").innerHTML = `
+      <div class="statBox ok"><div class="label">Dovuto</div><div class="value">€ ${dovuto.toFixed(2)}</div></div>
+      <div class="statBox"><div class="label">Pagato</div><div class="value">€ ${pag.toFixed(2)}</div></div>
+      <div class="statBox danger"><div class="label">Penalità</div><div class="value">€ ${pen.toFixed(2)}</div></div>
+      <div class="statBox accent"><div class="label">Residuo</div><div class="value">€ ${residuo.toFixed(2)}</div></div>
+      <div class="statBox"><div class="label">Filtro</div><div class="value">${ym ? ym : "Tutto"}</div></div>
+      <div class="statBox"><div class="label">Volontario</div><div class="value">${escapeHtml(DB.volontari.find(v=>v.id===volId)?.nome||"")}</div></div>
+    `;
+
+    const servizi = getServiziVolontario(volId, ym);
+    $("#srvCount").textContent = servizi.length;
+    $("#srvVolList").innerHTML = servizi.length ? servizi.map(s=>`
+      <div class="item">
+        <div class="itemTop">
+          <div>
+            <div class="itemTitle">${isoToIT(s.data)} • € ${s.quota.toFixed(2)}</div>
+            <div class="itemMeta">${escapeHtml(s.descrizione||"")}</div>
+          </div>
+        </div>
+      </div>
+    `).join("") : `<div class="hint">Nessun servizio nel filtro selezionato.</div>`;
+
+    const pays = getPagamentiVolontario(volId, ym);
+    $("#payCount").textContent = pays.length;
+    $("#payList").innerHTML = pays.length ? pays.map(p=>`
+      <div class="item">
+        <div class="itemTop">
+          <div>
+            <div class="itemTitle">${isoToIT(p.data)} • € ${Number(p.importo).toFixed(2)}</div>
+            <div class="itemMeta">${escapeHtml(p.note||"")}</div>
+          </div>
+          <span class="badge ok">pagamento</span>
+        </div>
+      </div>
+    `).join("") : `<div class="hint">Nessun pagamento.</div>`;
+
+    const pens = getPenalitaVolontario(volId, ym);
+    $("#penCount").textContent = pens.length;
+    $("#penList").innerHTML = pens.length ? pens.map(p=>`
+      <div class="item">
+        <div class="itemTop">
+          <div>
+            <div class="itemTitle">${isoToIT(p.data)} • -€ ${Number(p.importo).toFixed(2)}</div>
+            <div class="itemMeta">${escapeHtml(p.note||"")}</div>
+          </div>
+          <span class="badge danger">penalità</span>
+        </div>
+      </div>
+    `).join("") : `<div class="hint">Nessuna penalità.</div>`;
+  }
+
+  $("#refresh").onclick = update;
+  $("#volSel").onchange = update;
+
+  $("#monthNow").onclick = ()=>{
+    const d = new Date();
+    $("#month").value = String(d.getMonth()+1);
+    $("#year").value = String(d.getFullYear());
+    update();
+  };
+
+  $("#addPay").onclick = ()=>{
+    const volId = Number($("#volSel").value||0);
+    const amt = Number(($("#payAmt").value||"").trim().replace(",", "."));
+    const iso = itToISO($("#payDate").value);
+    if(!Number.isFinite(amt)) { toast("Importo pagamento non valido."); return; }
+    if(!iso) { toast("Data pagamento non valida (GG/MM/AAAA)."); return; }
+    addPagamento({volontario_id: volId, data: iso, importo: amt, note: $("#payNote").value.trim()});
+    $("#payAmt").value = "";
+    $("#payNote").value = "";
+    toast("Pagamento registrato.");
+    update();
+  };
+
+  $("#addPen").onclick = ()=>{
+    const volId = Number($("#volSel").value||0);
+    const amt = Number(($("#penAmt").value||"").trim().replace(",", "."));
+    const iso = itToISO($("#penDate").value);
+    if(!Number.isFinite(amt) || amt<=0) { toast("Importo penalità non valido."); return; }
+    if(!iso) { toast("Data penalità non valida (GG/MM/AAAA)."); return; }
+    addPenalita({volontario_id: volId, data: iso, importo: amt, note: $("#penNote").value.trim()});
+    $("#penAmt").value = "";
+    $("#penNote").value = "";
+    toast("Penalità registrata.");
+    update();
+  };
+
+  update();
+}
+
+async function renderNote(){
+  if(DB.settings.passwordHash){
+    const ok = await passwordPrompt();
+    if(!ok){ toast("Accesso annullato."); setPage("dashboard"); return; }
+  }
+
+  const volontari = getVolontari();
+  if(!volontari.length){
+    mount(`<div class="card"><div class="cardBody"><div class="hint">Nessun volontario presente. Aggiungine uno per iniziare.</div></div></div>`);
+    return;
+  }
+
+  mount(`
+    <div class="card">
+      <div class="cardHeader">
+        <div>
+          <h3>Note riservate</h3>
+          <div class="sub">Restano sul dispositivo (localStorage).</div>
+        </div>
+        <span class="badge">Protetto</span>
+      </div>
+      <div class="cardBody">
+        <div class="row">
+          <div class="field">
+            <label>Volontario</label>
+            <select class="select" id="noteVol">
+              ${volontari.map(v=>`<option value="${v.id}">${escapeHtml(v.nome)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field" style="align-content:end;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
+            <button class="btn" id="loadNote">Carica</button>
+            <button class="btn primary" id="saveNote">Salva</button>
+            <button class="btn danger" id="clearNote">Cancella</button>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="field">
+          <label>Contenuto</label>
+          <textarea class="textarea" id="noteText" placeholder="Scrivi qui..."></textarea>
+        </div>
+
+        <div class="hint" id="noteStatus" style="margin-top:10px;"></div>
+      </div>
+    </div>
+  `);
+
+  function loadNote(){
+    const id = Number($("#noteVol").value);
+    $("#noteText").value = getNota(id);
+    $("#noteStatus").textContent = "Note caricate.";
+  }
+  function saveNote(){
+    const id = Number($("#noteVol").value);
+    setNota(id, $("#noteText").value);
+    $("#noteStatus").textContent = "Note salvate.";
+    toast("Note salvate.");
+  }
+  function clearNote(){
+    modal({
+      title:"Cancella note",
+      body:"Vuoi cancellare completamente le note del volontario selezionato?",
+      actions:[
+        {label:"Annulla", kind:"ghost", onClick: ()=>closeModal()},
+        {label:"Cancella", kind:"danger", onClick: ()=>{
+          const id = Number($("#noteVol").value);
+          setNota(id, "");
+          $("#noteText").value = "";
+          $("#noteStatus").textContent = "Note cancellate.";
+          closeModal();
+          toast("Note cancellate.");
+        }}
+      ]
+    });
+  }
+
+  $("#loadNote").onclick = loadNote;
+  $("#saveNote").onclick = saveNote;
+  $("#clearNote").onclick = clearNote;
+  $("#noteVol").onchange = loadNote;
+  loadNote();
+}
+
+function renderImpostazioni(){
+  mount(`
+    <div class="grid">
+      <div class="card">
+        <div class="cardHeader">
+          <div>
+            <h3>Aspetto & Schermo</h3>
+            <div class="sub">Temi scuri coerenti.</div>
+          </div>
+        </div>
+        <div class="cardBody">
+          <div class="row">
+            <div class="field">
+              <label>Tema</label>
+              <select class="select" id="themeSel2">
+                <option value="aurora">Aurora</option>
+                <option value="emerald">Smeraldo</option>
+                <option value="graphite">Grafite</option>
+                <option value="sand">Sabbia</option>
+                <option value="light">Chiaro</option>
+              </select>
+              <div class="hint">I colori sono “chiusi” per restare leggibili.</div>
+            </div>
+            <div class="field" style="align-content:end;">
+              <button class="btn" id="toggleFS">Toggle fullscreen</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardHeader">
+          <div>
+            <h3>Sicurezza</h3>
+            <div class="sub">Password per Note. Vuota = disattiva.</div>
+          </div>
+          <span class="badge">SHA-256</span>
+        </div>
+        <div class="cardBody">
+          <div class="row">
+            <div class="field">
+              <label>Nuova password</label>
+              <input class="input" id="pwd1" type="password" placeholder="min 4 caratteri" />
+            </div>
+            <div class="field">
+              <label>Ripeti password</label>
+              <input class="input" id="pwd2" type="password" />
+            </div>
+          </div>
+          <div style="height:10px"></div>
+          <div style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;">
+            <button class="btn" id="removePwd">Rimuovi password</button>
+            <button class="btn primary" id="savePwd">Salva password</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:14px"></div>
+
+    <div class="card">
+      <div class="cardHeader">
+        <div>
+          <h3>Dati</h3>
+          <div class="sub">Backup/import e reset totale.</div>
+        </div>
+      </div>
+      <div class="cardBody" style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn" id="export2">Esporta backup</button>
+        <button class="btn" id="import2">Importa backup</button>
+        <button class="btn danger" id="resetAll">Cancella TUTTO</button>
+      </div>
+    </div>
+  `);
+
+  $("#themeSel2").value = DB.settings.theme || "aurora";
+  $("#themeSel2").onchange = (e)=>{ setTheme(e.target.value); toast("Tema applicato."); };
+  $("#toggleFS").onclick = toggleFullscreen;
+
+  $("#removePwd").onclick = ()=>{
+    modal({
+      title:"Rimuovere password",
+      body:"Rimuovere la password? L'area Note sarà accessibile senza richiesta.",
+      actions:[
+        {label:"Annulla", kind:"ghost", onClick: ()=>closeModal()},
+        {label:"Rimuovi", kind:"danger", onClick: ()=>{
+          DB.settings.passwordHash = "";
+          saveDB();
+          closeModal();
+          toast("Password rimossa.");
+        }}
+      ]
+    });
+  };
+
+  $("#savePwd").onclick = async ()=>{
+    const p1 = $("#pwd1").value;
+    const p2 = $("#pwd2").value;
+    if(p1 !== p2){ toast("Le password non coincidono."); return; }
+    if(!p1){ toast("Vuota: usa “Rimuovi password”."); return; }
+    if(p1.length < 4){ toast("Password troppo corta (min 4)."); return; }
+    DB.settings.passwordHash = await sha256(p1);
+    saveDB();
+    $("#pwd1").value = "";
+    $("#pwd2").value = "";
+    toast("Password salvata.");
+  };
+
+  $("#export2").onclick = exportBackup;
+  $("#import2").onclick = importBackup;
+
+  $("#resetAll").onclick = ()=>{
+    modal({
+      title:"Reset totale",
+      body:"Cancellare TUTTI i dati? Non si può annullare.",
+      actions:[
+        {label:"Annulla", kind:"ghost", onClick: ()=>closeModal()},
+        {label:"Cancella", kind:"danger", onClick: ()=>{
+          localStorage.removeItem(STORAGE_KEY);
+          DB = loadDB();
+          applyInitialSettings();
+          refreshKPIs();
+          closeModal();
+          toast("Dati cancellati.");
+          setPage("dashboard");
+        }}
+      ]
+    });
+  };
+}
+
+function wireNav(){
+  $("#nav").addEventListener("click",(e)=>{
+    const btn = e.target.closest("button[data-page]");
+    if(!btn) return;
+    setPage(btn.dataset.page);
+  });
+}
+function wireTopActions(){
+  $("#themeSel").value = DB.settings.theme || "aurora";
+  $("#themeSel").onchange = (e)=>setTheme(e.target.value);
+  $("#btnFullscreen").onclick = toggleFullscreen;
+  $("#btnQuickAdd").onclick = ()=>setPage("servizi");
+  $("#btnExport").onclick = exportBackup;
+  $("#btnImport").onclick = importBackup;
+}
+
+applyInitialSettings();
+refreshKPIs();
+wireNav();
+wireTopActions();
+setPage("dashboard");
+</script>
+</body>
+</html>
